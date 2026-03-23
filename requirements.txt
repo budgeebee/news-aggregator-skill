@@ -1,2 +1,7 @@
 requests
 beautifulsoup4
+lxml
+scrapling
+curl_cffi
+playwright
+browserforge
