@@ -25,11 +25,7 @@ def fetch_url_content(url):
         return ""
     try:
         page = Fetcher.get(url)
-        # Remove noise elements
-        for tag in page.css('script, style, nav, footer, header, aside'):
-            try: tag.attrib  # force lazy eval
-            except: pass
-        text = page.text
+        text = page.get_all_text()
         lines = (line.strip() for line in text.splitlines())
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = ' '.join(chunk for chunk in chunks if chunk)
