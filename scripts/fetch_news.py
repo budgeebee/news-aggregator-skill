@@ -310,6 +310,36 @@ def fetch_realnews_biz(limit=5, keyword=None):
     items = _parse_rss_feed("https://therealnews.com/feed", "The Real News Business")
     return filter_items(items, combined)[:limit]
 
+# --- Kalshi / prediction-market signal sources ---
+
+def fetch_politico(limit=5, keyword=None):
+    items = _parse_rss_feed("https://rss.politico.com/politics-news.xml", "Politico")
+    return filter_items(items, keyword)[:limit]
+
+def fetch_thehill(limit=5, keyword=None):
+    items = _parse_rss_feed("https://thehill.com/feed/", "The Hill")
+    return filter_items(items, keyword)[:limit]
+
+def fetch_coindesk(limit=5, keyword=None):
+    items = _parse_rss_feed("https://www.coindesk.com/arc/outboundfeeds/rss/", "CoinDesk")
+    return filter_items(items, keyword)[:limit]
+
+def fetch_espn(limit=5, keyword=None):
+    items = _parse_rss_feed("https://www.espn.com/espn/rss/news", "ESPN")
+    return filter_items(items, keyword)[:limit]
+
+def fetch_reuters(limit=5, keyword=None):
+    items = _parse_rss_feed("https://feeds.reuters.com/reuters/topNews", "Reuters")
+    return filter_items(items, keyword)[:limit]
+
+def fetch_yahoofinance(limit=5, keyword=None):
+    items = _parse_rss_feed("https://finance.yahoo.com/news/rssindex", "Yahoo Finance")
+    return filter_items(items, keyword)[:limit]
+
+def fetch_noaa_weather(limit=5, keyword=None):
+    items = _parse_rss_feed("https://www.weather.gov/rss_page.php?site_name=nws", "NOAA Weather")
+    return filter_items(items, keyword)[:limit]
+
 def main():
     parser = argparse.ArgumentParser()
     sources_map = {
@@ -318,7 +348,11 @@ def main():
         'wallstreetcn': fetch_wallstreetcn, 'producthunt': fetch_producthunt,
         'apnews': fetch_apnews, 'apnews-biz': fetch_apnews_biz,
         'theconversation': fetch_theconversation, 'theconversation-biz': fetch_theconversation_biz,
-        'realnews': fetch_realnews, 'realnews-biz': fetch_realnews_biz
+        'realnews': fetch_realnews, 'realnews-biz': fetch_realnews_biz,
+        'politico': fetch_politico, 'thehill': fetch_thehill,
+        'coindesk': fetch_coindesk, 'espn': fetch_espn,
+        'reuters': fetch_reuters, 'yahoofinance': fetch_yahoofinance,
+        'noaa-weather': fetch_noaa_weather,
     }
 
     parser.add_argument('--source', default='all', help='Source(s) to fetch from (comma-separated)')

@@ -1,6 +1,6 @@
 ---
 name: news-aggregator-skill
-description: "Comprehensive news aggregator that fetches, filters, and deeply analyzes real-time content from 11 sources: Hacker News, GitHub Trending, Product Hunt, 36Kr, Tencent News, WallStreetCN, V2EX, Weibo, AP News, The Conversation, and The Real News. Best for 'daily scans', 'tech news briefings', 'finance updates', and 'deep interpretations' of hot topics."
+description: "Comprehensive news aggregator that fetches, filters, and deeply analyzes real-time content from 18 sources: Hacker News, GitHub Trending, Product Hunt, 36Kr, Tencent News, WallStreetCN, V2EX, Weibo, AP News, The Conversation, The Real News, Politico, The Hill, CoinDesk, ESPN, Reuters, Yahoo Finance, NOAA Weather. Best for 'daily scans', 'tech news briefings', 'finance updates', 'politics', 'crypto', 'sports', and 'deep interpretations' of hot topics."
 ---
 
 # News Aggregator Skill
@@ -46,7 +46,7 @@ python3 scripts/fetch_news.py --source all --limit 10 --keyword "DeepSeek" --dee
 
 **Arguments:**
 
-- `--source`: One of `hackernews`, `weibo`, `github`, `36kr`, `producthunt`, `v2ex`, `tencent`, `wallstreetcn`, `apnews`, `apnews-biz`, `theconversation`, `theconversation-biz`, `realnews`, `realnews-biz`, `all`.
+- `--source`: One of `hackernews`, `weibo`, `github`, `36kr`, `producthunt`, `v2ex`, `tencent`, `wallstreetcn`, `apnews`, `apnews-biz`, `theconversation`, `theconversation-biz`, `realnews`, `realnews-biz`, `politico`, `thehill`, `coindesk`, `espn`, `reuters`, `yahoofinance`, `noaa-weather`, `all`.
 - `--limit`: Max items per source (default 10).
 - `--keyword`: Comma-separated filters (e.g. "AI,GPT").
 - `--deep`: **[NEW]** Enable deep fetching. Downloads and extracts the main text content of the articles.
