@@ -48,6 +48,8 @@ def enrich_items_with_content(items, max_workers=10):
     return items
 
 # --- Source Fetchers ---
+# (SOURCES registry defined at module level, after the fetchers, so it can be
+#  imported directly by the FastAPI service in service/app/main.py)
 
 def fetch_hackernews(limit=5, keyword=None):
     base_url = "https://news.ycombinator.com"
@@ -360,20 +362,22 @@ def fetch_noaa_weather(limit=5, keyword=None):
     items = _parse_rss_feed("https://www.weather.gov/rss_page.php?site_name=nws", "NOAA Weather")
     return filter_items(items, keyword)[:limit]
 
+SOURCES = {
+    'hackernews': fetch_hackernews, 'weibo': fetch_weibo, 'github': fetch_github,
+    '36kr': fetch_36kr, 'v2ex': fetch_v2ex, 'tencent': fetch_tencent,
+    'wallstreetcn': fetch_wallstreetcn, 'producthunt': fetch_producthunt,
+    'apnews': fetch_apnews, 'apnews-biz': fetch_apnews_biz,
+    'theconversation': fetch_theconversation, 'theconversation-biz': fetch_theconversation_biz,
+    'realnews': fetch_realnews, 'realnews-biz': fetch_realnews_biz,
+    'politico': fetch_politico, 'thehill': fetch_thehill,
+    'coindesk': fetch_coindesk, 'espn': fetch_espn,
+    'reuters': fetch_reuters, 'yahoofinance': fetch_yahoofinance,
+    'noaa-weather': fetch_noaa_weather,
+}
+
+
 def main():
     parser = argparse.ArgumentParser()
-    sources_map = {
-        'hackernews': fetch_hackernews, 'weibo': fetch_weibo, 'github': fetch_github,
-        '36kr': fetch_36kr, 'v2ex': fetch_v2ex, 'tencent': fetch_tencent,
-        'wallstreetcn': fetch_wallstreetcn, 'producthunt': fetch_producthunt,
-        'apnews': fetch_apnews, 'apnews-biz': fetch_apnews_biz,
-        'theconversation': fetch_theconversation, 'theconversation-biz': fetch_theconversation_biz,
-        'realnews': fetch_realnews, 'realnews-biz': fetch_realnews_biz,
-        'politico': fetch_politico, 'thehill': fetch_thehill,
-        'coindesk': fetch_coindesk, 'espn': fetch_espn,
-        'reuters': fetch_reuters, 'yahoofinance': fetch_yahoofinance,
-        'noaa-weather': fetch_noaa_weather,
-    }
 
     parser.add_argument('--source', default='all', help='Source(s) to fetch from (comma-separated)')
     parser.add_argument('--limit', type=int, default=10, help='Limit per source. Default 10')
@@ -384,12 +388,12 @@ def main():
 
     to_run = []
     if args.source == 'all':
-        to_run = list(sources_map.values())
+        to_run = list(SOURCES.values())
     else:
         requested_sources = [s.strip() for s in args.source.split(',')]
         for s in requested_sources:
-            if s in sources_map:
-                to_run.append(sources_map[s])
+            if s in SOURCES:
+                to_run.append(SOURCES[s])
 
     results = []
     for func in to_run:

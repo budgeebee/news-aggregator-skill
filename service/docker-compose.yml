@@ -1,0 +1,8 @@
+services:
+  news-aggregator:
+    build:
+      context: ..
+      dockerfile: service/Dockerfile
+    ports:
+      - "8098:8000"
+    restart: unless-stopped
