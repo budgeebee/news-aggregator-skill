@@ -1,15 +1,16 @@
 import argparse
+import concurrent.futures
 import json
+import re
 import sys
 import time
-import re
-import concurrent.futures
 from datetime import datetime
 from urllib.parse import quote
 
 import requests
 from bs4 import BeautifulSoup
 from scrapling.fetchers import Fetcher
+
 
 def filter_items(items, keyword=None):
     if not keyword:
@@ -58,17 +59,20 @@ def fetch_hackernews(limit=5, keyword=None):
         url = f"{base_url}/news?p={page_num}"
         try:
             page = Fetcher.get(url)
-        except: break
+        except Exception:
+            break
 
         rows = page.css('.athing')
-        if not rows: break
+        if not rows:
+            break
 
         page_items = []
         for row in rows:
             try:
                 id_ = row.attrib.get('id', '')
                 title_links = row.css('.titleline a')
-                if not title_links: continue
+                if not title_links:
+                    continue
                 title_line = title_links[0]
                 title = title_line.text
                 link = title_line.attrib.get('href', '')
@@ -79,7 +83,8 @@ def fetch_hackernews(limit=5, keyword=None):
                 age_spans = page.css(f'.age a[href="item?id={id_}"]')
                 time_str = age_spans[0].text if age_spans else ""
 
-                if link and link.startswith('item?id='): link = f"{base_url}/{link}"
+                if link and link.startswith('item?id='):
+                    link = f"{base_url}/{link}"
 
                 page_items.append({
                     "source": "Hacker News",
@@ -88,10 +93,12 @@ def fetch_hackernews(limit=5, keyword=None):
                     "heat": score,
                     "time": time_str
                 })
-            except: continue
+            except Exception:
+                continue
 
         news_items.extend(filter_items(page_items, keyword))
-        if len(news_items) >= limit: break
+        if len(news_items) >= limit:
+            break
         page_num += 1
         time.sleep(0.5)
 
@@ -107,7 +114,8 @@ def fetch_weibo(limit=5, keyword=None):
         all_items = []
         for item in items:
             title = item.get('note', '') or item.get('word', '')
-            if not title: continue
+            if not title:
+                continue
             heat = item.get('num', 0)
             full_url = f"https://s.weibo.com/weibo?q={quote(title)}&Refer=top"
             all_items.append({
@@ -124,13 +132,15 @@ def fetch_weibo(limit=5, keyword=None):
 def fetch_github(limit=5, keyword=None):
     try:
         page = Fetcher.get("https://github.com/trending")
-    except: return []
+    except Exception:
+        return []
 
     items = []
     for article in page.css('article.Box-row'):
         try:
             h2s = article.css('h2 a')
-            if not h2s: continue
+            if not h2s:
+                continue
             h2 = h2s[0]
             title = h2.get_all_text().strip().replace('\n', '').replace(' ', '')
             link = "https://github.com" + h2.attrib.get('href', '')
@@ -148,18 +158,21 @@ def fetch_github(limit=5, keyword=None):
                 "heat": f"{stars} stars",
                 "time": "Today"
             })
-        except: continue
+        except Exception:
+            continue
     return filter_items(items, keyword)[:limit]
 
 def fetch_36kr(limit=5, keyword=None):
     try:
         page = Fetcher.get("https://36kr.com/newsflashes")
-    except: return []
+    except Exception:
+        return []
 
     items = []
     for item in page.css('.newsflash-item'):
         title_tags = item.css('.item-title')
-        if not title_tags: continue
+        if not title_tags:
+            continue
         title_tag = title_tags[0]
         title = title_tag.text.strip()
         href = title_tag.attrib.get('href', '')
@@ -190,7 +203,8 @@ def fetch_v2ex(limit=5, keyword=None):
                 "time": "Hot"
             })
         return filter_items(items, keyword)[:limit]
-    except: return []
+    except Exception:
+        return []
 
 def fetch_tencent(limit=5, keyword=None):
     try:
@@ -205,7 +219,8 @@ def fetch_tencent(limit=5, keyword=None):
                 "time": news.get('pub_time', '') or news.get('publish_time', '')
             })
         return filter_items(items, keyword)[:limit]
-    except: return []
+    except Exception:
+        return []
 
 def fetch_wallstreetcn(limit=5, keyword=None):
     try:
@@ -215,22 +230,24 @@ def fetch_wallstreetcn(limit=5, keyword=None):
         for item in data['data']['items']:
             res = item.get('resource')
             if res and (res.get('title') or res.get('content_short')):
-                 ts = res.get('display_time', 0)
-                 time_str = datetime.fromtimestamp(ts).strftime('%H:%M') if ts else ""
-                 items.append({
-                     "source": "Wall Street CN",
-                     "title": res.get('title') or res.get('content_short'),
-                     "url": res.get('uri'),
-                     "time": time_str
-                 })
+                ts = res.get('display_time', 0)
+                time_str = datetime.fromtimestamp(ts).strftime('%H:%M') if ts else ""
+                items.append({
+                    "source": "Wall Street CN",
+                    "title": res.get('title') or res.get('content_short'),
+                    "url": res.get('uri'),
+                    "time": time_str
+                })
         return filter_items(items, keyword)[:limit]
-    except: return []
+    except Exception:
+        return []
 
 def fetch_producthunt(limit=5, keyword=None):
     try:
         response = requests.get("https://www.producthunt.com/feed", timeout=10)
         soup = BeautifulSoup(response.text, 'xml')
-        if not soup.find('item'): soup = BeautifulSoup(response.text, 'html.parser')
+        if not soup.find('item'):
+            soup = BeautifulSoup(response.text, 'html.parser')
 
         items = []
         for entry in soup.find_all(['item', 'entry']):
@@ -249,7 +266,8 @@ def fetch_producthunt(limit=5, keyword=None):
                 "heat": "Top Product"
             })
         return filter_items(items, keyword)[:limit]
-    except: return []
+    except Exception:
+        return []
 
 def _parse_rss_feed(url, source_name):
     """Generic RSS/Atom feed parser using requests + BS4 XML."""
@@ -262,7 +280,8 @@ def _parse_rss_feed(url, source_name):
         for entry in soup.find_all(['item', 'entry']):
             title_tag = entry.find('title')
             title = title_tag.get_text(strip=True) if title_tag else ""
-            if not title: continue
+            if not title:
+                continue
             link_tag = entry.find('link')
             if link_tag:
                 url_val = link_tag.get('href') or link_tag.get_text(strip=True)
@@ -278,7 +297,8 @@ def _parse_rss_feed(url, source_name):
                 "heat": ""
             })
         return items
-    except: return []
+    except Exception:
+        return []
 
 # --- New Sources (RSS-based) ---
 
@@ -368,13 +388,15 @@ def main():
     else:
         requested_sources = [s.strip() for s in args.source.split(',')]
         for s in requested_sources:
-            if s in sources_map: to_run.append(sources_map[s])
+            if s in sources_map:
+                to_run.append(sources_map[s])
 
     results = []
     for func in to_run:
         try:
             results.extend(func(args.limit, args.keyword))
-        except: pass
+        except Exception:
+            pass
 
     if args.deep and results:
         sys.stderr.write(f"Deep fetching content for {len(results)} items...\n")
